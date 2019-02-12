@@ -92,7 +92,7 @@ async def change_status(msg):
 #             await writer.wait_closed()
 async def status_setter():
     cur_set = cur_status
-    await change_status(status_msgs[cur_set])
+    await client.change_presence(game=discord.Game(name=status_msgs[cur_set]))
 
     while True:
         if cur_set != cur_status:
@@ -170,10 +170,9 @@ def handle_exit():
 
 
 keep_alive = True
+server_address = ('169.254.72.29', 8789)
 def status_getter():
     global cur_status
-
-    server_address = ('169.254.72.29', 8789)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     sock.connect(server_address)
@@ -201,6 +200,11 @@ def status_getter():
     sock.close()
     print('closed socket')
 
+
+print('Waiting for socket to exist')
+socksboi = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socksboi.connect(server_address)
+socksboi.close()
 
 t = threading.Thread(target=status_getter)
 t.start()

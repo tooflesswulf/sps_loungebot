@@ -8,7 +8,8 @@ if __name__ == '__main__':
   wiringpi.pinMode(sensor_pin, 0)
 
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.bind(('raspberrypi.local', 8789))
+  # sock.bind(('raspberrypi.local', 8789))
+  sock.bind(('169.254.72.29', 8789))
   sock.listen(1)
 
   while True:

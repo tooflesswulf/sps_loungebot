@@ -210,7 +210,7 @@ while True:
     client.event(on_message)
 
     try:
-        client.loop.run_until_complete(client.start('NTIwMzIwMzQzMDQzMjExMjg1.D0StZA.NJF-h7dHM6jFq-LBbtGi8-Ayj3w'))
+        client.loop.run_until_complete(client.start('NTE1NDIyNzk1NDIxOTc0NTY5.D0S3YQ.in-emBhU_8Q7ND0D9whQnYQ55L4'))
         print('b')
     except (KeyboardInterrupt, RuntimeError):
         print('a')

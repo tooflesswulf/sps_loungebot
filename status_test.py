@@ -4,8 +4,9 @@ import asyncio
 import time
 import traceback
 import pickle
-import logging
 import threading
+
+# import bot_functions
 
 control_char = '!'
 
@@ -31,6 +32,7 @@ except (OSError, IOError) as e:
 
 client = discord.Client()
 
+
 def print_log(msg):
     print('[{}] '.format(timemacro()) + msg)
     # with open(log_file, 'a') as f:
@@ -46,50 +48,6 @@ async def change_status(msg):
         await client.send_message(user, msg)
 
 
-# async def read_pi():
-#     global cur_status
-#     # server_address = ('raspberrypi.local', 8789)
-#     server_address = ('169.254.72.29', 8789)
-#     await client.change_presence(game=discord.Game(name=status_msgs[cur_status]))
-#
-#     while True:
-#         try:
-#             reader, writer = await asyncio.open_connection(*server_address)
-#         except (ConnectionRefusedError, socket.gaierror):
-#             print('Could not connect to pi. Waiting %d sec to try again' % retry_period)
-#             await asyncio.sleep(retry_period)
-#             continue
-#         except Exception as e:
-#             print(e)
-#             break
-#
-#         try:
-#             while True:
-#                 writer.write(b'1')
-#                 data = await reader.read(1)
-#                 prev_status = cur_status
-#                 if data == b'1':
-#                     cur_status = 1
-#                 else:
-#                     cur_status = 0
-#                 if prev_status != cur_status:
-#                     print_log('Door state changed to {}'.format(cur_status))
-#                     # await client.change_presence(game=discord.Game(name=status_msgs[cur_status]))
-#                     await change_status(status_msgs[cur_status])
-#                 await asyncio.sleep(update_freq)
-#         except (ConnectionResetError, IOError):
-#             print_log('Pi went offline.')
-#             cur_status = 2
-#             # await client.change_presence(game=discord.Game(name=status_msgs[cur_status]))
-#             await change_status(status_msgs[cur_status])
-#             continue
-#         except Exception as e:
-#             print_log('Something went wrong. stopping.')
-#             print_log(traceback.format_exc())
-#             break
-#         finally:
-#             writer.close()
-#             await writer.wait_closed()
 async def status_setter():
     cur_set = cur_status
     await client.change_presence(game=discord.Game(name=status_msgs[cur_set]))
@@ -107,8 +65,6 @@ async def on_ready():
 
     client.loop.create_task(kill_task())
     client.loop.create_task(status_setter())
-
-    # client.loop.create_task(read_pi())
 
 
 async def on_message(message):
@@ -215,9 +171,7 @@ while True:
 
     try:
         client.loop.run_until_complete(client.start('NTE1NDIyNzk1NDIxOTc0NTY5.D0S3YQ.in-emBhU_8Q7ND0D9whQnYQ55L4'))
-        print('b')
     except (KeyboardInterrupt, RuntimeError):
-        print('a')
         break
     except SystemExit:
         handle_exit()

@@ -1,13 +1,6 @@
-import discord
+from discord.ext import commands
 
 
-class Client(discord.Client):
+class MyBot(commands.Bot):
     cur_status = 2
     command_prefix = ''
-
-    def freshcopy(self):
-        new = Client(loop=self.loop)
-        new.cur_status = self.cur_status
-        new.command_prefix = self.command_prefix
-
-        return new

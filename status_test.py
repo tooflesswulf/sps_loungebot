@@ -20,7 +20,6 @@ status_msgs = [
     'pi is offline'
 ]
 cur_status = 2
-# log_file = 'loungebot.log'
 notif_file = 'subscribed_ids.pkl'
 try:
     with open(notif_file, 'rb') as f:

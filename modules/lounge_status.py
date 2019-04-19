@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import pickle
+from modules import MyDiscordClient as mdc
 
 update_freq = 3  # s
 
@@ -20,25 +21,25 @@ except (OSError, IOError) as e:
         pickle.dump(notif_people, f)
 
 
-def module_commands(client):
+def module_commands(client: mdc.Client):
+    cc = client.command_prefix
+
     status_resp_desc = 'Responds with the current state of the lounge door.'
 
     async def status_resp(msg):
-        await client.send_message(msg.channel, status_msgs[client.cur_status])
+        await msg.channel.send(status_msgs[client.cur_status])
 
     subscribe_handler_desc = 'Sends you a DM whenever the door is opened or closed.'
 
     async def subscribe_handler(msg):
         if msg.author.id in notif_people:
-            await client.send_message(msg.author,
-                                      'You\'re already subscribed. {}unsub to unsubscribe.'.format(client.control_char))
+            await msg.author.send('You\'re already subscribed. {}unsub to unsubscribe.'.format(cc))
             return
         notif_people.append(msg.author.id)
         with open(notif_file, 'wb') as f:
             pickle.dump(notif_people, f)
-        await client.send_message(msg.author,
-                                  'Subscribed you to door state change updates. ' +
-                                  '{}unsub to unsubscribe.'.format(client.control_char))
+        await msg.author.send('Subscribed you to door state change updates. ' +
+                              '{}unsub to unsubscribe.'.format(cc))
         print('Subscribed user {}({})'.format(msg.author.id, msg.author.name))
         return
 
@@ -46,14 +47,13 @@ def module_commands(client):
 
     async def unsub_handler(msg):
         if msg.author.id not in notif_people:
-            await client.send_message(msg.author,
-                                      'You\'re not subscribed.'.format(client.control_char))
+            await msg.author('You\'re not subscribed.'.format(cc))
             return
 
         notif_people.remove(msg.author.id)
         with open(notif_file, 'wb') as f:
             pickle.dump(notif_people, f)
-        await client.send_message(msg.author, 'You\'re now unsubscribed.')
+        await msg.author.send('You\'re now unsubscribed.')
         print('Unsubscribed user {}({})'.format(msg.author.id, msg.author.name))
         return
 
@@ -64,20 +64,20 @@ def module_commands(client):
     ]
 
 
-def load_tasks(client):
-    client.cur_status = 2
+def load_tasks(client: mdc.Client):
+    # client.cur_status = 2
 
     async def change_status(txt):
-        await client.change_presence(game=discord.Game(name=txt))
+        await client.change_presence(activity=discord.Game(name=txt))
 
         # notify all subscribers
         for uid in notif_people:
-            user = await client.get_user_info(uid)
-            await client.send_message(user, txt)
+            user = client.get_user(uid)
+            await user.send(txt)
 
     async def status_setter():
         cur_set = client.cur_status
-        # await client.change_presence(game=discord.Game(name=status_msgs[cur_set]))
+        await client.change_presence(activity=discord.Game(name=status_msgs[cur_set]))
 
         while True:
             if cur_set != client.cur_status:

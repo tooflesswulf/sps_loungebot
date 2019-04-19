@@ -1,47 +1,17 @@
-import socket
 import discord
 import asyncio
-import time
-import traceback
-import pickle
-import threading
 
 import module_loader
 
-client = module_loader.client
-client.control_char = ';'
-
-commands = module_loader.load_commands()
-tasks = module_loader.load_tasks()
-
+cmd_prefix = ';'
 reboot_freq = 86400
 
-
-@client.event
-async def on_ready():
-    print('Logged in as:\n\t{}\n\t{}'.format(client.user.name, client.user.id))
-    print('------------')
-
-    for t in tasks:
-        client.loop.create_task(t())
-
-
-@client.event
-async def on_message(message):
-    if message.content.startswith(client.control_char):
-        cmd = message.content[len(client.control_char):].split()[0]
-        for k, f in commands:
-            if cmd in k:
-                print('Executing function with message {}'.format(cmd))
-                await f(message)
+client = module_loader.setup_client(cmd_prefix)
 
 
 async def kill_task():
     await asyncio.sleep(reboot_freq)
     raise SystemExit
-
-
-tasks += [kill_task]
 
 
 def handle_exit():
@@ -63,21 +33,19 @@ def handle_exit():
             pass
 
 
-while True:
-    client.event(on_ready)
-    client.event(on_message)
+if __name__ == '__main__':
+    client.loop.create_task(kill_task())
+    while True:
+        try:
+            client.loop.run_until_complete(client.start('NTIwMzIwMzQzMDQzMjExMjg1.XK1XzA.95zdEiAjehH8cjMOV0nXz91TR4I'))
+        except (KeyboardInterrupt, RuntimeError):
+            break
+        except SystemExit:
+            handle_exit()
 
-    try:
-        client.loop.run_until_complete(client.start('NTIwMzIwMzQzMDQzMjExMjg1.XK1XzA.95zdEiAjehH8cjMOV0nXz91TR4I'))
-    except (KeyboardInterrupt, RuntimeError):
-        break
-    except SystemExit:
-        handle_exit()
+        print("Bot restarting")
+        client = module_loader.setup_client(cmd_prefix, client.loop)
+        client.loop.create_task(kill_task())
 
-    print("Bot restarting")
-    client = discord.Client(loop=client.loop)
-
-keep_alive = False
-handle_exit()
-# t.join()
-print('Program exited properly')
+    handle_exit()
+    print('Program exited properly')

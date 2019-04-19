@@ -1,36 +1,35 @@
 import discord
 from modules import MyDiscordClient as mdc
 
-from modules import lounge_status, test_functions, budget_nitro
 
+def load_modules(client, debug=False):
+    cmd = []
+    if debug:
+        from modules import test_functions
+        cmd += test_functions.module_commands(client)
 
-def load_commands():
-    cmd = test_functions.module_commands(client)
+    from modules import lounge_status, budget_nitro
     cmd += lounge_status.module_commands(client)
     cmd += budget_nitro.module_commands(client)
 
-    return conv_help(cmd)
-
-
-def load_tasks():
     tasks = lounge_status.load_tasks(client)
+    return conv_help(cmd, client.command_prefix), tasks
 
-    return tasks
 
-
-def setup_client(cmd_prefix, loop=None):
-    global client
-
-    try:
-        client = client.freshcopy(loop)
-    except NameError:
-        print('This should be first time starting.')
+def setup_client(cmd_prefix, old_client=None, debug=False):
+    if old_client:
+        client = old_client.freshcopy()
+    else:
         client = mdc.Client()
+        print('This should be first time starting.')
+        # Single-execution setup operations should be loaded here i guess
+        if not debug:
+            from modules import lounge_status
+            lounge_status.create_pi_communicator()
 
     client.command_prefix = cmd_prefix
 
-    commands = load_commands()
-    tasks = load_tasks()
+    commands, tasks = load_modules(client, debug=debug)
 
     @client.event
     async def on_message(message):
@@ -51,16 +50,15 @@ def setup_client(cmd_prefix, loop=None):
     return client
 
 
-def conv_help(cmd):
+def conv_help(cmd, prefix):
     help_key = ['h', 'help']
     cmd.append((help_key, None, 'Prints the help menu.'))
 
     newcmds = []
     helpstring = '```'
 
-    cc = client.command_prefix
     for key, func, desc in cmd:
-        helpstring += cc + (', ' + cc).join(key) + '\n\t' + desc + '\n\n'
+        helpstring += prefix + (', ' + prefix).join(key) + '\n\t' + desc + '\n\n'
         newcmds.append((key, func))
 
     helpstring += '```'

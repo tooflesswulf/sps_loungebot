@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import pickle
+import socket, time, traceback, threading
 from modules import MyDiscordClient as mdc
 
 update_freq = 3  # s
@@ -65,8 +66,6 @@ def module_commands(client: mdc.Client):
 
 
 def load_tasks(client: mdc.Client):
-    # client.cur_status = 2
-
     async def change_status(txt):
         await client.change_presence(activity=discord.Game(name=txt))
 
@@ -80,9 +79,61 @@ def load_tasks(client: mdc.Client):
         await client.change_presence(activity=discord.Game(name=status_msgs[cur_set]))
 
         while True:
+            try:
+                if cur_set != cur_status:
+                    client.cur_status = cur_status
+            except NameError:
+                pass
+
             if cur_set != client.cur_status:
                 cur_set = client.cur_status
                 await change_status(status_msgs[cur_set])
             await asyncio.sleep(update_freq)
 
     return [status_setter]
+
+
+# Code for single-thread pi zero communication program.
+# Exposes the read status as a global variable
+def create_pi_communicator():
+    keep_alive = True
+    server_address = ('169.254.72.29', 8789)
+
+    def status_getter():
+        global cur_status
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        sock.connect(server_address)
+        print('Opened socket')
+        while keep_alive:
+            try:
+                sock.send(b'1')
+                ret = sock.recv(1)
+                if ret == b'1':
+                    cur_status = 1
+                else:
+                    cur_status = 0
+
+                time.sleep(update_freq / 2)
+            except (ConnectionResetError, IOError) as e:
+                cur_status = 2
+                print('got connection/io error:')
+                print(e)
+                break
+            except Exception as e:
+                print('some other error:')
+                print(traceback.format_exc())
+                break
+
+        sock.close()
+        print('closed socket')
+
+    print('Waiting for socket to exist')
+    socksboi = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socksboi.connect(server_address)
+    socksboi.close()
+
+    t = threading.Thread(target=status_getter)
+    t.start()
+
+    return t

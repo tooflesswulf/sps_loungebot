@@ -5,13 +5,15 @@ import module_loader
 
 cmd_prefix = ';'
 reboot_freq = 86400
+# reboot_freq = 8
 
-client = module_loader.setup_client(cmd_prefix)
+client = module_loader.setup_client(cmd_prefix, debug=True)
 
 
 async def kill_task():
-    await asyncio.sleep(reboot_freq)
-    raise SystemExit
+    while True:
+        await asyncio.sleep(reboot_freq)
+        raise SystemExit
 
 
 def handle_exit():
@@ -44,8 +46,13 @@ if __name__ == '__main__':
             handle_exit()
 
         print("Bot restarting")
-        client = module_loader.setup_client(cmd_prefix, client.loop)
+        client = client.freshcopy()
+        client = module_loader.setup_client(cmd_prefix, old_client=client, debug=True)
         client.loop.create_task(kill_task())
+    # try:
+    #     client.loop.run_until_complete(client.start('NTIwMzIwMzQzMDQzMjExMjg1.XK1XzA.95zdEiAjehH8cjMOV0nXz91TR4I'))
+    # except KeyboardInterrupt:
+    #     pass
 
     handle_exit()
     print('Program exited properly')

@@ -32,7 +32,6 @@ class BudgetNitro(commands.Cog):
 
         sender = '{} says:\n'.format(ctx.author.mention)
         text = await self.convert_emojis(ctx, ' '.join(text))
-        print(text)
         await ctx.send(sender + text)
         await ctx.message.delete()
 

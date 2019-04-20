@@ -33,7 +33,10 @@ class BudgetNitro(commands.Cog):
         sender = '{} says:\n'.format(ctx.author.mention)
         text = await self.convert_emojis(ctx, ' '.join(text))
         await ctx.send(sender + text)
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except (commands.BotMissingPermissions, commands.MissingPermissions):
+            pass
 
     async def convert_emojis(self, ctx, text):
         splits = EmojiSplitter(text).splits

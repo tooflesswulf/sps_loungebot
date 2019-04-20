@@ -90,12 +90,12 @@ class EmojiSplitter():
     def __init__(self, text):
         self.text = text
         self.splits = []
-        m = re.search(r'<:[a-zA-Z0-9_]+:[0-9]+>', text)
+        m = re.search(r'<a?:[a-zA-Z0-9_]+:[0-9]+>', text)
         while m:
             self.push_str(text[0:m.start(0)])
             self.push_em(text[m.start(0):m.end(0)])
             text = text[m.end(0):]
-            m = re.search(r'<:[a-zA-Z0-9_]+:[0-9]+>', text)
+            m = re.search(r'<a?:[a-zA-Z0-9_]+:[0-9]+>', text)
         self.push_str(text)
 
     def push_str(self, str):

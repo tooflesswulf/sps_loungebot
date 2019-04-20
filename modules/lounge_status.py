@@ -4,6 +4,7 @@ import discord
 import asyncio
 import pickle
 import socket, time, traceback, threading
+import datetime as dt
 
 status_msgs = [
     'door is closed',
@@ -50,7 +51,8 @@ class LoungeDoorStatus(commands.Cog):
                       description='Sends you a DM when the door opens or closes')
     async def subscribe_handler(self, ctx: commands.Context):
         if ctx.message.author.id in self.notif_people:
-            await ctx.author.send('You\'re already subscribed. {}unsub to unsubscribe.')
+            await ctx.author.send('You\'re already subscribed. {}unsub to unsubscribe.'
+                                  .format(ctx.bot.command_prefix))
             return
         self.notif_people.append(ctx.author.id)
         with open(self.notif_file, 'wb') as f:
@@ -112,8 +114,11 @@ class LoungeDoorStatus(commands.Cog):
     async def change_status(self, txt):
         await self.bot.change_presence(activity=discord.Game(name=txt))
 
+        t = dt.datetime.now()
+        timestr = '`EDT {:d}:{:02d}`\t'.format(t.hour, t.minute)
+
         for uid in self.notif_people:
-            await self.bot.get_user(uid).send(txt)
+            await self.bot.get_user(uid).send(timestr + txt)
 
     @commands.Cog.listener(name='on_ready')
     async def status_setter(self):

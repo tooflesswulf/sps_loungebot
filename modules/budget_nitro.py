@@ -11,6 +11,17 @@ class BudgetNitro(commands.Cog):
         self.bot = bot
 
     @commands.command(
+        name='nl',
+        brief='Lists all custom emojis this bot has access to',
+        description='Lists all custom emojis this bot has access to',
+    )
+    async def emoji_list(self, ctx):
+        outstr = ''
+        for moji in ctx.bot.emojis:
+            outstr += '{}\t`:{}:`\n'.format(str(moji), moji.name)
+        await ctx.message.channel.send(outstr)
+
+    @commands.command(
         name='nitro',
         brief='Converts emojis tags in your message to make you feel rich',
         description='Prints your text back out at you. Emoji codes will be '
@@ -24,10 +35,7 @@ class BudgetNitro(commands.Cog):
             return
 
         if len(text) == 1 and text[0] in ['list', 'l']:
-            outstr = ''
-            for moji in ctx.bot.emojis:
-                outstr += '{}\t`:{}:`\n'.format(str(moji), moji.name)
-            await ctx.message.channel.send(outstr)
+            await self.emoji_list.invoke(ctx)
             return
 
         sender = '{} says:\n'.format(ctx.author.mention)

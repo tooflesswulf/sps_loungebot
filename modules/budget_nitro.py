@@ -61,7 +61,7 @@ class BudgetNitro(commands.Cog):
                 stringbuilder += string[0:ixs[i]]
                 stringbuilder += str(emoji_obj)
                 string = string[ixs[i + 1] + 1:]
-                ixs -= ixs[i+1]+1
+                ixs -= ixs[i + 1] + 1
                 i += 2
             stringbuilder += string
 

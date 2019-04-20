@@ -1,23 +1,22 @@
-import discord
-import asyncio
-from modules import MyDiscordClient as mdc
+from discord.ext import commands
 
 
-def module_commands(client: mdc.Client):
-    change_cur_status_desc = 'Sets `client.cur_status` to the next number. Used for debug only.'
+class StatusTester(commands.Cog):
+    description = 'This cog is used for testing shit.\n' \
+                  'IF YOU SEE THIS TELL ALBERT'
 
-    async def change_cur_status(msg):
-        args = msg.content.split()
+    @commands.command(
+        name='cs',
+        brief='Changes loungebot.cur_state',
+        description='Changes cur_state to input. must be 0, 1, 2.'
+    )
+    async def change_cs(self, cxt: commands.Context, num):
         try:
-            nxt = int(args[1])
-            if 0 > nxt or nxt > 2:
+            nxt = int(num)
+            if nxt < 0 or 2 < nxt:
                 raise ValueError
         except (IndexError, ValueError):
-            msg.channel.send('Need valid status number (0-2 int)')
+            cxt.channel.send('Need valid status number (0-2 int)')
             return
 
-        client.cur_status = nxt
-
-    return [
-        (['cs'], change_cur_status, change_cur_status_desc)
-    ]
+        cxt.bot.cogs['LoungeDoorStatus'].cur_status = nxt

@@ -126,6 +126,8 @@ def handle_exit():
 
 keep_alive = True
 server_address = ('169.254.72.29', 8789)
+
+
 def status_getter():
     global cur_status
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -141,7 +143,7 @@ def status_getter():
             else:
                 cur_status = 0
 
-            time.sleep(update_freq/2)
+            time.sleep(update_freq / 2)
         except (ConnectionResetError, IOError) as e:
             cur_status = 2
             print('got connection/io error:')
@@ -182,4 +184,3 @@ keep_alive = False
 handle_exit()
 t.join()
 print('Program exited properly')
-

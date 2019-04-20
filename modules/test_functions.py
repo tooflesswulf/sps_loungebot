@@ -5,6 +5,9 @@ class StatusTester(commands.Cog):
     description = 'This cog is used for testing shit.\n' \
                   'IF YOU SEE THIS TELL ALBERT'
 
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.command(
         name='cs',
         brief='Changes loungebot.cur_state',

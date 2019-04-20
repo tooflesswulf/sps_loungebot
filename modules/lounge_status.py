@@ -26,8 +26,7 @@ class LoungeDoorStatus(commands.Cog):
     '''
 
     def __init__(self, bot):
-        super(commands.Cog)
-
+        self.bot = bot
         self.notif_file = 'subscribed_ids.pkl'
         try:
             with open(self.notif_file, 'rb') as f:
@@ -37,7 +36,6 @@ class LoungeDoorStatus(commands.Cog):
             with open(self.notif_file, 'wb') as f:
                 pickle.dump(self.notif_people, f)
 
-        self.bot = bot
         self.status_thread = threading.Thread(target=self.status_getter)
 
     @commands.command(name='lounge',
@@ -78,18 +76,23 @@ class LoungeDoorStatus(commands.Cog):
 
         sock.connect(self.server_address)
         print('Opened socket')
+
+        status = LazyStateChange()
+        status.state = self.cur_status
         while self.keep_alive:
             try:
                 sock.send(b'1')
                 ret = sock.recv(1)
                 if ret == b'1':
-                    self.cur_status = 1
+                    status.suggest(1)
                 else:
-                    self.cur_status = 0
+                    status.suggest(0)
 
+                self.cur_status = status.state
                 time.sleep(.1)
             except (ConnectionResetError, IOError) as e:
                 self.cur_status = 2
+                status.state = 2
                 print('got connection/io error:')
                 print(e)
                 break
@@ -133,3 +136,27 @@ class LoungeDoorStatus(commands.Cog):
                 await asyncio.sleep(self.update_freq)
                 continue
             await asyncio.sleep(.1)
+
+        print('Unloaded status setter')
+
+    def cog_unload(self):
+        self.keep_alive = False
+        self.status_thread.join()
+
+
+# Requires 5 of the same signal in a row to change the state. Truly lazy.
+class LazyStateChange:
+    state = 2
+    next = -1
+    cnt = 0
+
+    def suggest(self, n):
+        if self.next == n:
+            self.cnt += 1
+            if self.cnt >= 5:
+                self.state = n
+                self.cnt = 0
+            return
+
+        self.next = n
+        self.cnt = 0

@@ -1,4 +1,4 @@
-from modules import budget_nitro, lounge_status
+from modules import budget_nitro, lounge_status, test_functions
 
 
 def load_modules(client, debug=False):
@@ -10,5 +10,4 @@ def load_modules(client, debug=False):
     client.add_cog(doorbot)
 
     if debug:
-        from modules import test_functions
         client.add_cog(test_functions.StatusTester(client))

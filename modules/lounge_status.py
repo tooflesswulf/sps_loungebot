@@ -135,7 +135,7 @@ class LoungeDoorStatus(commands.Cog):
                 await self.change_status(status_msgs[cur_set])
                 await asyncio.sleep(self.update_freq)
                 continue
-            await asyncio.sleep(.1)
+            await asyncio.sleep(.05)
 
         print('Unloaded status setter')
 

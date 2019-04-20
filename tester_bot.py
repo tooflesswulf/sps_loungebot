@@ -6,10 +6,10 @@ import module_loader
 
 cmd_prefix = ';'
 client = commands.Bot(cmd_prefix,
-                      description='Happy test bot. Awooooo...\n'
-                                  'tell Albert to fix this shit')
+                      description='Discord bot primarily made to broadcast '
+                                  'the status of the lounge. Other features have been added because.')
 
-module_loader.load_modules(client, debug=True)
+module_loader.load_modules(client, use_raspi=True)
 
 
 @client.event

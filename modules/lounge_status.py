@@ -42,7 +42,7 @@ class LoungeDoorStatus(commands.Cog):
                       brief='Replies with the current status of the lounge door',
                       description='Replies with the current status of the lounge door')
     async def status_resp(self, ctx: commands.Context):
-        ctx.channel.send(status_msgs[self.cur_status])
+        await ctx.channel.send(status_msgs[self.cur_status])
 
     @commands.command(name='sub',
                       brief='Sends you a DM when the door opens or closes',

@@ -1,9 +1,10 @@
+from discord.ext import commands
+
 import discord
 import asyncio
 import pickle
-from modules import MyDiscordClient as mdc
-
-update_freq = 3  # s
+import socket, time, traceback, threading
+import datetime as dt
 
 status_msgs = [
     'door is closed',
@@ -11,78 +12,151 @@ status_msgs = [
     'pi is offline'
 ]
 
-notif_file = 'subscribed_ids.pkl'
-try:
-    with open(notif_file, 'rb') as f:
-        notif_people = pickle.load(f)
-except (OSError, IOError) as e:
-    notif_people = []
-    with open(notif_file, 'wb') as f:
-        pickle.dump(notif_people, f)
 
+class LoungeDoorStatus(commands.Cog):
+    description = 'This cog exists to notify people about the state of the lounge'
 
-def module_commands(client: mdc.Client):
-    cc = client.command_prefix
+    cur_status = 2
+    keep_alive = True
+    server_address = ('169.254.72.29', 8789)
+    update_freq = 3  # s
 
-    status_resp_desc = 'Responds with the current state of the lounge door.'
+    '''
+    Initializes this bot with the subscribers list and status-grabbing thread.
+    '''
 
-    async def status_resp(msg):
-        await msg.channel.send(status_msgs[client.cur_status])
+    def __init__(self, bot):
+        self.bot = bot
+        self.notif_file = 'subscribed_ids.pkl'
+        try:
+            with open(self.notif_file, 'rb') as f:
+                self.notif_people = pickle.load(f)
+        except (OSError, IOError) as e:
+            self.notif_people = []
+            with open(self.notif_file, 'wb') as f:
+                pickle.dump(self.notif_people, f)
 
-    subscribe_handler_desc = 'Sends you a DM whenever the door is opened or closed.'
+        self.status_thread = threading.Thread(target=self.status_getter)
 
-    async def subscribe_handler(msg):
-        if msg.author.id in notif_people:
-            await msg.author.send('You\'re already subscribed. {}unsub to unsubscribe.'.format(cc))
+    @commands.command(name='lounge',
+                      brief='Replies with the current status of the lounge door',
+                      description='Replies with the current status of the lounge door')
+    async def status_resp(self, ctx: commands.Context):
+        ctx.channel.send(status_msgs[self.cur_status])
+
+    @commands.command(name='sub',
+                      brief='Sends you a DM when the door opens or closes',
+                      description='Sends you a DM when the door opens or closes')
+    async def subscribe_handler(self, ctx: commands.Context):
+        if ctx.message.author.id in self.notif_people:
+            await ctx.author.send('You\'re already subscribed. {}unsub to unsubscribe.'
+                                  .format(ctx.bot.command_prefix))
             return
-        notif_people.append(msg.author.id)
-        with open(notif_file, 'wb') as f:
-            pickle.dump(notif_people, f)
-        await msg.author.send('Subscribed you to door state change updates. ' +
-                              '{}unsub to unsubscribe.'.format(cc))
-        print('Subscribed user {}({})'.format(msg.author.id, msg.author.name))
-        return
+        self.notif_people.append(ctx.author.id)
+        with open(self.notif_file, 'wb') as f:
+            pickle.dump(self.notif_people, f)
+        await ctx.author.send('Subscribed you to door state change updates. ' +
+                              '{}unsub to unsubscribe.'.format(ctx.bot.command_prefix))
 
-    unsub_handler_desc = 'Undoes the subscribe command above.'
+    @commands.command(name='unsub',
+                      brief='Stops sending you DM\'s',
+                      description='Stops sending you DM\'s')
+    async def unsubscribe_handler(self, ctx: commands.Context):
+        if ctx.message.author.id in self.notif_people:
+            await ctx.author.send('You\'re not subscribed.')
+            return
+        self.notif_people.remove(ctx.author.id)
+        with open(self.notif_file, 'wb') as f:
+            pickle.dump(self.notif_people, f)
+        await ctx.author.send('You\'re now unsubscribed.')
 
-    async def unsub_handler(msg):
-        if msg.author.id not in notif_people:
-            await msg.author('You\'re not subscribed.'.format(cc))
+    # Threaded function for getting the door state from the pi.
+    def status_getter(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        sock.connect(self.server_address)
+        print('Opened socket')
+
+        status = LazyStateChange()
+        status.state = self.cur_status
+        while self.keep_alive:
+            try:
+                sock.send(b'1')
+                ret = sock.recv(1)
+                if ret == b'1':
+                    status.suggest(1)
+                else:
+                    status.suggest(0)
+
+                self.cur_status = status.state
+                time.sleep(.1)
+            except (ConnectionResetError, IOError) as e:
+                self.cur_status = 2
+                status.state = 2
+                print('got connection/io error:')
+                print(e)
+                break
+            except Exception as e:
+                print('some other error:')
+                print(traceback.format_exc())
+                break
+
+        sock.close()
+        print('closed socket')
+
+    # Starts the pi listener, blocking until its connected.
+    def start_pi_listener(self):
+        print('Waiting for socket to exist')
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(self.server_address)
+        sock.close()
+
+        # Starts the getter thread
+        self.status_thread.start()
+
+    async def change_status(self, txt):
+        await self.bot.change_presence(activity=discord.Game(name=txt))
+
+        t = dt.datetime.now()
+        timestr = '`EDT {:d}:{:02d}`\t'.format(t.hour, t.minute)
+
+        for uid in self.notif_people:
+            await self.bot.get_user(uid).send(timestr + txt)
+
+    @commands.Cog.listener(name='on_ready')
+    async def status_setter(self):
+        cur_set = self.cur_status
+        print('Starting status setter')
+        await self.bot.change_presence(activity=discord.Game(name=status_msgs[cur_set]))
+
+        while self.keep_alive:
+            if cur_set != self.cur_status:
+                cur_set = self.cur_status
+                await self.change_status(status_msgs[cur_set])
+                await asyncio.sleep(self.update_freq)
+                continue
+            await asyncio.sleep(.05)
+
+        print('Unloaded status setter')
+
+    def cog_unload(self):
+        self.keep_alive = False
+        self.status_thread.join()
+
+
+# Requires 5 of the same signal in a row to change the state. Truly lazy.
+class LazyStateChange:
+    state = 2
+    next = -1
+    cnt = 0
+
+    def suggest(self, n):
+        if self.next == n:
+            self.cnt += 1
+            if self.cnt >= 5:
+                self.state = n
+                self.cnt = 0
             return
 
-        notif_people.remove(msg.author.id)
-        with open(notif_file, 'wb') as f:
-            pickle.dump(notif_people, f)
-        await msg.author.send('You\'re now unsubscribed.')
-        print('Unsubscribed user {}({})'.format(msg.author.id, msg.author.name))
-        return
-
-    return [
-        (['r', 'lounge'], status_resp, status_resp_desc),
-        (['subscribe', 'sub'], subscribe_handler, subscribe_handler_desc),
-        (['unsubscribe', 'usub', 'unsub'], unsub_handler, unsub_handler_desc),
-    ]
-
-
-def load_tasks(client: mdc.Client):
-    # client.cur_status = 2
-
-    async def change_status(txt):
-        await client.change_presence(activity=discord.Game(name=txt))
-
-        # notify all subscribers
-        for uid in notif_people:
-            user = client.get_user(uid)
-            await user.send(txt)
-
-    async def status_setter():
-        cur_set = client.cur_status
-        await client.change_presence(activity=discord.Game(name=status_msgs[cur_set]))
-
-        while True:
-            if cur_set != client.cur_status:
-                cur_set = client.cur_status
-                await change_status(status_msgs[cur_set])
-            await asyncio.sleep(update_freq)
-
-    return [status_setter]
+        self.next = n
+        self.cnt = 0

@@ -1,51 +1,22 @@
 import discord
+from discord.ext import commands
 import asyncio
 
 import module_loader
 
 cmd_prefix = ';'
-reboot_freq = 86400
+client = commands.Bot(cmd_prefix,
+                      description='REEEEE\n'
+                                  'Tell Albert if u see this. Say bot is brooken and dumb')
 
-client = module_loader.setup_client(cmd_prefix)
-
-
-async def kill_task():
-    await asyncio.sleep(reboot_freq)
-    raise SystemExit
+module_loader.load_modules(client, use_raspi=False)
 
 
-def handle_exit():
-    print("Handling client exit")
-    client.loop.run_until_complete(client.logout())
-    for t in asyncio.Task.all_tasks(loop=client.loop):
-        if t.done():
-            t.exception()
-            continue
-        t.cancel()
-        try:
-            client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
-            t.exception()
-        except asyncio.InvalidStateError:
-            pass
-        except asyncio.TimeoutError:
-            pass
-        except asyncio.CancelledError:
-            pass
+@client.event
+async def on_ready():
+    print('Logged in as:\n\t{}\n\t{}'.format(client.user.name, client.user.id))
+    print('------------')
 
 
-if __name__ == '__main__':
-    client.loop.create_task(kill_task())
-    while True:
-        try:
-            client.loop.run_until_complete(client.start('NTIwMzIwMzQzMDQzMjExMjg1.XK1XzA.95zdEiAjehH8cjMOV0nXz91TR4I'))
-        except (KeyboardInterrupt, RuntimeError):
-            break
-        except SystemExit:
-            handle_exit()
-
-        print("Bot restarting")
-        client = module_loader.setup_client(cmd_prefix, client.loop)
-        client.loop.create_task(kill_task())
-
-    handle_exit()
-    print('Program exited properly')
+client.run('NTIwMzIwMzQzMDQzMjExMjg1.XK1XzA.95zdEiAjehH8cjMOV0nXz91TR4I')
+print('Properly exited')

@@ -24,14 +24,14 @@ A simple example is shown [here](https://github.com/Rapptz/discord.py#bot-exampl
 
 We use a slightly more advanced method of organization, `Cogs`. [documentation here](https://github.com/Rapptz/discord.py#bot-example).
 Each `Cog`, stored under [modules](modules/), is a class that wraps several related functions and can keep track of local fields.
-Here is example code for a barebones addon that replies `pong` when anyone sends `ping`.
+Here is example code for a barebones addon that replies `echoed xxx` when anyone sends `!echo xxx`.
 
 ```python
 from discord.ext import commands
 class PingPong(commands.Cog):
     @commands.command()
-    async def ping(self, ctx):
-        ctx.send('pong')
+    async def echo(self, ctx, word):
+        await ctx.send('echoed' + word)
 ```
 
 Let's break this down line-by-line, because python is fucking magic.
@@ -39,12 +39,42 @@ Let's break this down line-by-line, because python is fucking magic.
 ```python
 from discord.ext import commands
 ```
-Import the discord library. Easy enough.
+Import the discord command interface library. Easy enough.
 
-```
+```python
 class PingPong(commands.Cog):
 ```
+Define the Cog you are adding. The name will be the class name, in this case `PingPong`.
+You can access this Cog using `client.get_cog('PingPong')`, allowing for inter-Cog communication.
+The parenthesis are the python syntax for class inheritance.
+The `commands.Cog` class handles all the behind-the-scenes magic, so the code you write can be linked to discord with a few simple lines.
 
+```python
+@commands.command()
+```
+This innocent-looking line handles almost all of the work behind the scenes.
+The `@` denotes a [python decorator](https://realpython.com/primer-on-python-decorators/).
+These are complicated, so all you need to know is that it will take the function you define on the next line,
+and send it through several pipelines to connect it to the bot.
+Also, note that there are parenthesis behind the line, meaning that `commands.command` is actually a function that returns a decorator.
+You can put arguments in the parenthesis to do some cool stuff.
+
+```python
+async def echo(self, ctx, word):
+```
+Finally we get to defining the function we want to implement.
+The `async` tag is necessary to define the function as a [coroutine](https://docs.python.org/3/library/asyncio-task.html). (Don't worry about it too much, this is just how discord.py works in the backend.)
+The function's name `echo` defines how the command is called (`!echo`). To change this, pass a `name='something'` argument into the decorator above.
+Lastly, the arguments of the command. `ctx` will be a [`Context`](https://discordpy.readthedocs.io/en/rewrite/ext/commands/api.html#context) object that describes the message that triggered the command.
+`word` is a magic [positional argument acceptor](https://discordpy.readthedocs.io/en/rewrite/ext/commands/commands.html#positional).
+
+```python
+await ctx.send('echoed' + word)
+```
+The actual code for the command is as simple or complex as you need it to be.
+The `ctx.send` function sends a message back to the same channel that triggered the command.
+It needs to be `await`'ed, because that's just how `discord.py` and coroutines work.
+More discord commands can be found on the [API](https://discordpy.readthedocs.io/en/latest/api.html)
 
 ####Notes
 I use a slightly different vocabulary from `discord.py`.

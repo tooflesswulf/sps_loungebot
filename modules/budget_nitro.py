@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 
 import re
 import numpy as np
@@ -41,6 +42,8 @@ class BudgetNitro(commands.Cog):
         sender = '{} says:\n'.format(ctx.author.mention)
         text = await self.convert_emojis(ctx, ' '.join(text))
         await ctx.send(sender + text)
+        if isinstance(ctx.channel, discord.DMChannel) or isinstance(ctx.channel, discord.GroupChannel):
+            return
         try:
             await ctx.message.delete()
         except (commands.BotMissingPermissions, commands.MissingPermissions, commands.CommandInvokeError):

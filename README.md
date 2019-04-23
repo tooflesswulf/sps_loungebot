@@ -28,10 +28,21 @@ Here is example code for a barebones addon that replies `pong` when anyone sends
 
 ```python
 from discord.ext import commands
-class PingPong(commands.Bot):
+class PingPong(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         ctx.send('pong')
+```
+
+Let's break this down line-by-line, because python is fucking magic.
+
+```python
+from discord.ext import commands
+```
+Import the discord library. Easy enough.
+
+```
+class PingPong(commands.Cog):
 ```
 
 

@@ -43,7 +43,7 @@ class BudgetNitro(commands.Cog):
         await ctx.send(sender + text)
         try:
             await ctx.message.delete()
-        except (commands.BotMissingPermissions, commands.MissingPermissions):
+        except (commands.BotMissingPermissions, commands.MissingPermissions, commands.CommandInvokeError):
             pass
 
     async def convert_emojis(self, ctx, text):

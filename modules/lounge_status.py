@@ -18,6 +18,7 @@ class LoungeDoorStatus(commands.Cog):
 
     cur_status = 2
     keep_alive = True
+    status_setter_lock = False
     server_address = ('169.254.72.29', 8789)
     update_freq = 3  # s
 
@@ -125,7 +126,11 @@ class LoungeDoorStatus(commands.Cog):
 
     @commands.Cog.listener(name='on_ready')
     async def status_setter(self):
+        if self.status_setter_lock:
+            return
+
         cur_set = self.cur_status
+        self.status_setter_lock = True
         print('Starting status setter')
         await self.bot.change_presence(activity=discord.Game(name=status_msgs[cur_set]))
 
@@ -138,6 +143,7 @@ class LoungeDoorStatus(commands.Cog):
             await asyncio.sleep(.05)
 
         print('Unloaded status setter')
+        self.status_setter_lock = False
 
     def cog_unload(self):
         self.keep_alive = False

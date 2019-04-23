@@ -80,8 +80,6 @@ class BudgetNitro(commands.Cog):
 
         return stringbuilder
 
-    # async def check_emoji(self, ):
-
     # shh secret functions
     @commands.Cog.listener('on_message')
     async def call_albert(self, msg):

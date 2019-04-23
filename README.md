@@ -22,7 +22,7 @@ A basic understanding of Python is required to add features to this bot.
 The bot runs using `discord.py`'s command extension module, which is well documented [here](https://discordpy.readthedocs.io/en/rewrite/ext/commands/api.html).
 A simple example is shown [here](https://github.com/Rapptz/discord.py#bot-example).
 
-####Cog
+#### Cog
 
 ---
 We use a slightly more advanced method of organization, `Cogs`. [documentation here](https://github.com/Rapptz/discord.py#bot-example).
@@ -79,14 +79,14 @@ The `ctx.send` function sends a message back to the same channel that triggered 
 It needs to be `await`'ed, because that's just how `discord.py` and coroutines work.
 More discord commands can be found on the [API](https://discordpy.readthedocs.io/en/latest/api.html)
 
-####Connecting the Cog
+#### Connecting the Cog
 
 ---
 After writing the Cog, adding it to the bot is a one-line command `client.add_cog(cog_name)`.
 You can see as examples in [module_loader.py](module_loader.py).
 
 
-####Notes
+#### Notes
 I use a slightly different vocabulary from `discord.py`.
 * `client` <-> `bot`
 * `module` <-> `cog`

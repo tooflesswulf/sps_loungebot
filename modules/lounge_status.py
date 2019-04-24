@@ -96,7 +96,8 @@ class LoungeDoorStatus(commands.Cog):
                 status.state = 2
                 print('got connection/io error:')
                 print(e)
-                break
+                print('\nTrying to restart anyways.')
+                continue
             except Exception as e:
                 print('some other error:')
                 print(traceback.format_exc())

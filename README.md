@@ -26,7 +26,7 @@ A simple example is shown [here](https://github.com/Rapptz/discord.py#bot-exampl
 
 ---
 We use a slightly more advanced method of organization, `Cogs`. [documentation here](https://github.com/Rapptz/discord.py#bot-example).
-Each `Cog`, stored under [modules](modules/), is a class that wraps several related functions and can keep track of local fields.
+Each `Cog`, stored under [`modules/`](modules/), is a class that wraps several related functions and can keep track of local fields.
 Here is example code for a barebones addon that replies `echoed xxx` when anyone sends `!echo xxx`.
 
 ```python

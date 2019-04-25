@@ -39,9 +39,11 @@ class BudgetNitro(commands.Cog):
             await self.emoji_list.invoke(ctx)
             return
 
-        sender = '{} says:\n'.format(ctx.author.mention)
         text = await self.convert_emojis(ctx, ' '.join(text))
-        await ctx.send(sender + text)
+        e = discord.Embed(description=text)
+        e.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await ctx.send(embed=e)
+
         if isinstance(ctx.channel, discord.DMChannel) or isinstance(ctx.channel, discord.GroupChannel):
             return
         try:

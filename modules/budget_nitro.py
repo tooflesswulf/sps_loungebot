@@ -68,38 +68,6 @@ class BudgetNitro(commands.Cog):
             'U got poked in {}#{}'.format(guild, name))
 
 
-async def convert_emojis(ctx, text):
-    splits = EmojiSplitter(text).splits
-    converter = commands.EmojiConverter()
-
-    ret_str = ''
-
-    for valid, string in splits:
-        if not valid:
-            ret_str += string
-            continue
-
-        ixs = np.array([i for i, v in enumerate(string) if v == ':'])
-
-        i = 0
-        while i + 1 < len(ixs):
-            substr = string[ixs[i] + 1:ixs[i + 1]]
-            try:
-                emoji_obj = await converter.convert(ctx, substr)
-            except commands.BadArgument:
-                i += 1
-                continue
-
-            ret_str += string[0:ixs[i]]
-            ret_str += str(emoji_obj)
-            string = string[ixs[i + 1] + 1:]
-            ixs -= ixs[i + 1] + 1
-            i += 2
-        ret_str += string
-
-    return ret_str
-
-
 class EmojiSplitter():
     def __init__(self, text):
         self.text = text
@@ -117,3 +85,38 @@ class EmojiSplitter():
 
     def push_em(self, str):
         self.splits.append((False, str))
+
+
+async def convert_emojis(ctx, text):
+    splits = EmojiSplitter(text).splits
+    converter = commands.EmojiConverter()
+
+    ret_str = ''
+
+    for valid, string in splits:
+        if not valid:
+            ret_str += string
+            continue
+
+        ixs = np.array([i for i, v in enumerate(string) if v == ':'])
+
+        i = 0
+        while i + 1 < len(ixs):
+            substr = string[ixs[i] + 1:ixs[i + 1]]
+
+            emoji_obj = discord.utils.get(ctx.guild.emojis, name=substr)
+            if emoji_obj is None:
+                emoji_obj = discord.utils.get(ctx.bot.emojis, name=substr)
+
+            if emoji_obj is None:
+                i += 1
+                continue
+
+            ret_str += string[0:ixs[i]]
+            ret_str += str(emoji_obj)
+            string = string[ixs[i + 1] + 1:]
+            ixs -= ixs[i + 1] + 1
+            i += 2
+        ret_str += string
+
+    return ret_str

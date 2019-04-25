@@ -39,7 +39,7 @@ class BudgetNitro(commands.Cog):
             await self.emoji_list.invoke(ctx)
             return
 
-        text = await self.convert_emojis(ctx, ' '.join(text))
+        text = await convert_emojis(ctx, ' '.join(text))
         e = discord.Embed(description=text)
         e.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         await ctx.send(embed=e)
@@ -48,39 +48,8 @@ class BudgetNitro(commands.Cog):
             return
         try:
             await ctx.message.delete()
-        except (commands.BotMissingPermissions, commands.MissingPermissions, commands.CommandInvokeError):
+        except discord.errors.Forbidden:
             pass
-
-    async def convert_emojis(self, ctx, text):
-        splits = EmojiSplitter(text).splits
-        converter = commands.EmojiConverter()
-
-        stringbuilder = ''
-
-        for valid, string in splits:
-            if not valid:
-                stringbuilder += string
-                continue
-
-            ixs = np.array([i for i, v in enumerate(string) if v == ':'])
-
-            i = 0
-            while i + 1 < len(ixs):
-                substr = string[ixs[i] + 1:ixs[i + 1]]
-                try:
-                    emoji_obj = await converter.convert(ctx, substr)
-                except commands.BadArgument:
-                    i += 1
-                    continue
-
-                stringbuilder += string[0:ixs[i]]
-                stringbuilder += str(emoji_obj)
-                string = string[ixs[i + 1] + 1:]
-                ixs -= ixs[i + 1] + 1
-                i += 2
-            stringbuilder += string
-
-        return stringbuilder
 
     # shh secret functions
     @commands.Cog.listener('on_message')
@@ -97,6 +66,38 @@ class BudgetNitro(commands.Cog):
 
         await self.bot.get_user(97477826969616384).send(
             'U got poked in {}#{}'.format(guild, name))
+
+
+async def convert_emojis(ctx, text):
+    splits = EmojiSplitter(text).splits
+    converter = commands.EmojiConverter()
+
+    ret_str = ''
+
+    for valid, string in splits:
+        if not valid:
+            ret_str += string
+            continue
+
+        ixs = np.array([i for i, v in enumerate(string) if v == ':'])
+
+        i = 0
+        while i + 1 < len(ixs):
+            substr = string[ixs[i] + 1:ixs[i + 1]]
+            try:
+                emoji_obj = await converter.convert(ctx, substr)
+            except commands.BadArgument:
+                i += 1
+                continue
+
+            ret_str += string[0:ixs[i]]
+            ret_str += str(emoji_obj)
+            string = string[ixs[i + 1] + 1:]
+            ixs -= ixs[i + 1] + 1
+            i += 2
+        ret_str += string
+
+    return ret_str
 
 
 class EmojiSplitter():

@@ -1,15 +1,14 @@
-import discord
 from discord.ext import commands
-import asyncio
-
-import module_loader
+from modules import budget_nitro, embed_printer, test_functions
 
 cmd_prefix = ';'
 client = commands.Bot(cmd_prefix,
                       description='REEEEE\n'
                                   'Tell Albert if u see this. Say bot is brooken and dumb')
 
-module_loader.load_modules(client, use_raspi=False)
+client.add_cog(budget_nitro.BudgetNitro(client))
+# client.add_cog(embed_printer.EmbedPrinter(client))
+client.add_cog(test_functions.StatusTester(client))
 
 
 @client.event

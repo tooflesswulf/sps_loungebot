@@ -1,4 +1,5 @@
 from discord.ext import commands
+from modules.embed_printer import EmbedPrinter
 
 
 class StatusTester(commands.Cog):
@@ -23,3 +24,10 @@ class StatusTester(commands.Cog):
             return
 
         cxt.bot.cogs['LoungeDoorStatus'].cur_status = nxt
+
+    @commands.command(
+        name='create'
+    )
+    async def new_inst(self, ctx, num):
+        add = EmbedPrinter(ctx.bot, num)
+        ctx.bot.add_cog(add)

@@ -5,7 +5,7 @@ import time
 from time import strftime
 
 
-class EmbedPrinter(commands.Cog):
+class EmbedListPrinter(commands.Cog):
     def __init__(self, bot, n):
         self.bot = bot
         self.id = n

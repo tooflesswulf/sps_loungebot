@@ -1,5 +1,5 @@
 from discord.ext import commands
-from modules.embed_printer import EmbedPrinter
+from modules.long_list_printer import EmbedListPrinter
 
 
 class StatusTester(commands.Cog):
@@ -29,5 +29,5 @@ class StatusTester(commands.Cog):
         name='create'
     )
     async def new_inst(self, ctx, num):
-        add = EmbedPrinter(ctx.bot, num)
+        add = EmbedListPrinter(ctx.bot, num)
         ctx.bot.add_cog(add)

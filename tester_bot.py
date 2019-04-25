@@ -1,5 +1,5 @@
 from discord.ext import commands
-from modules import budget_nitro, embed_printer, test_functions
+from modules import budget_nitro, long_list_printer, test_functions
 
 cmd_prefix = ';'
 client = commands.Bot(cmd_prefix,

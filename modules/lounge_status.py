@@ -9,7 +9,8 @@ import datetime as dt
 status_msgs = [
     'door is closed',
     'door is open',
-    'pi is offline'
+    'pi is offline',
+    'Fatal error. Plz keep error log.'
 ]
 
 
@@ -73,38 +74,49 @@ class LoungeDoorStatus(commands.Cog):
 
     # Threaded function for getting the door state from the pi.
     def status_getter(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        sock.connect(self.server_address)
-        print('Opened socket')
-
-        status = LazyStateChange()
-        status.state = self.cur_status
         while self.keep_alive:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             try:
-                sock.send(b'1')
-                ret = sock.recv(1)
-                if ret == b'1':
-                    status.suggest(1)
-                else:
-                    status.suggest(0)
-
-                self.cur_status = status.state
-                time.sleep(.1)
-            except (ConnectionResetError, IOError) as e:
-                self.cur_status = 2
-                status.state = 2
-                print('got connection/io error:')
-                print(e)
-                print('\nTrying to restart anyways.')
+                sock.connect(self.server_address)
+            except (ConnectionRefusedError, socket.gaierror) as e:
+                print('Socket could not be opened. Trying again.')
                 continue
-            except Exception as e:
-                print('some other error:')
-                print(traceback.format_exc())
-                break
+            print('Opened socket')
 
-        sock.close()
-        print('closed socket')
+            status = LazyStateChange()
+            status.state = self.cur_status
+            while self.keep_alive:
+                try:
+                    sock.send(b'1')
+                    ret = sock.recv(1)
+                    if ret == b'1':
+                        status.suggest(1)
+                    else:
+                        status.suggest(0)
+
+                    self.cur_status = status.state
+                    time.sleep(.05)
+                except (ConnectionResetError, IOError) as e:
+                    self.cur_status = 2
+                    status.state = 2
+                    print('got connection/io error:')
+                    print(e)
+                    print('\nTrying to restart anyways.')
+                    time.sleep(1)
+                    break
+                except Exception as e:
+                    self.cur_status = 3
+                    status.state = 3
+                    sock.close()
+                    print('some other error:')
+                    print(traceback.format_exc())
+                    with open('error_{}.txt'.format(time.time())) as f:
+                        f.write(traceback.format_exc())
+                    return
+
+            sock.close()
+            print('closed socket')
 
     # Starts the pi listener, blocking until its connected.
     def start_pi_listener(self):

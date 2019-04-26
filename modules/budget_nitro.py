@@ -28,7 +28,7 @@ class BudgetNitro(commands.Cog):
         if ctx.guild.emojis:
             text = ''
             for m in ctx.guild.emojis:
-                text += '{}\t`:{}:`\n'.format(str(m), m.name)
+                text += '{} `:{}:`\n'.format(str(m), m.name)
             e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
 
         for i in ids_order:
@@ -39,7 +39,7 @@ class BudgetNitro(commands.Cog):
 
             text = ''
             for m in g.emojis:
-                text += '{}\t`:{}:\t|\t{}`\n'.format(str(m), m.name, m.id)
+                text += '{} `:{}:` | `:<{}>:`\n'.format(str(m), m.name, m.id)
             e.add_field(name='Server ' + g.name, value=text, inline=False)
 
         await e.send(ctx)
@@ -125,14 +125,17 @@ async def convert_emojis(ctx, text):
         i = 0
         while i + 1 < len(ixs):
             substr = string[ixs[i] + 1:ixs[i + 1]]
+            m = re.match(r'<([0-9]+)>', substr)
+            if m:
+                emoji_obj = discord.utils.get(ctx.bot.emojis, id=int(m.group(1)))
+            else:
+                emoji_obj = discord.utils.get(ctx.guild.emojis, name=substr)
+                if emoji_obj is None:
+                    emoji_obj = discord.utils.get(ctx.bot.emojis, name=substr)
 
-            emoji_obj = discord.utils.get(ctx.guild.emojis, name=substr)
-            if emoji_obj is None:
-                emoji_obj = discord.utils.get(ctx.bot.emojis, name=substr)
-
-            if emoji_obj is None:
-                i += 1
-                continue
+                if emoji_obj is None:
+                    i += 1
+                    continue
 
             ret_str += string[0:ixs[i]]
             ret_str += str(emoji_obj)

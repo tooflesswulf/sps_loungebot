@@ -38,7 +38,7 @@ class StatusTester(commands.Cog):
         if ctx.guild.emojis:
             text = ''
             for m in ctx.guild.emojis:
-                text += '{}\t`:{}:`\n'.format(str(m), m.name)
+                text += '{} `:{}:`\n'.format(str(m), m.name)
             for i in range(2):
                 e.add_field(name='Server {} p{}'.format(ctx.guild.name, i), value=text)
 
@@ -50,7 +50,7 @@ class StatusTester(commands.Cog):
 
             text = ''
             for m in g.emojis:
-                text += '{}\t`:{}:\t|\t{}`\n'.format(str(m), m.name, m.id)
+                text += '{} `:{}: | `:<{}>:`\n'.format(str(m), m.name, m.id)
             e.add_field(name='Server ' + g.name, value=text, inline=False)
 
         await e.send(ctx)

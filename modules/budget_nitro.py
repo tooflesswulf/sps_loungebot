@@ -89,7 +89,6 @@ class EmojiSplitter():
 
 async def convert_emojis(ctx, text):
     splits = EmojiSplitter(text).splits
-    converter = commands.EmojiConverter()
 
     ret_str = ''
 

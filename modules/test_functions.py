@@ -26,8 +26,32 @@ class StatusTester(commands.Cog):
         cxt.bot.cogs['LoungeDoorStatus'].cur_status = nxt
 
     @commands.command(
-        name='create'
+        name='p'
     )
-    async def new_inst(self, ctx, num):
-        add = EmbedListPrinter(ctx.bot, num)
-        ctx.bot.add_cog(add)
+    async def new_inst(self, ctx):
+        e = EmbedListPrinter(ctx)
+        e.title = 'Emoji List'
+
+        ids = [e.guild_id for e in ctx.bot.emojis]
+        ids_order = sorted(set(ids))
+
+        if ctx.guild.emojis:
+            text = ''
+            for m in ctx.guild.emojis:
+                text += '{}\t`:{}:`\n'.format(str(m), m.name)
+            for i in range(2):
+                e.add_field(name='Server {} p{}'.format(ctx.guild.name, i), value=text)
+
+        for i in ids_order:
+            if i == ctx.guild.id:
+                continue
+
+            g = ctx.bot.get_guild(i)
+
+            text = ''
+            for m in g.emojis:
+                text += '{}\t`:{}:\t|\t{}`\n'.format(str(m), m.name, m.id)
+            e.add_field(name='Server ' + g.name, value=text, inline=False)
+
+        await e.send(ctx)
+        ctx.bot.add_listener(e.change_page_listener, name='on_reaction_add')

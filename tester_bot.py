@@ -7,8 +7,8 @@ client = commands.Bot(cmd_prefix,
                                   'Tell Albert if u see this. Say bot is brooken and dumb')
 
 client.add_cog(budget_nitro.BudgetNitro(client))
-client.add_cog(long_list_printer.EmbedListPrinter(client))
-# client.add_cog(test_functions.StatusTester(client))
+# client.add_cog(long_list_printer.EmbedListPrinter(client))
+client.add_cog(test_functions.StatusTester(client))
 
 
 @client.event

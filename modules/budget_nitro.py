@@ -26,14 +26,14 @@ class BudgetNitro(commands.Cog):
         ids = [e.guild_id for e in ctx.bot.emojis]
         ids_order = sorted(set(ids))
 
-        if ctx.guild.emojis:
+        if ctx.guild and ctx.guild.emojis:
             text = ''
             for m in ctx.guild.emojis:
                 text += '{} `:{}:`\n'.format(str(m), m.name)
             e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
 
         for i in ids_order:
-            if i == ctx.guild.id:
+            if ctx.guild and i == ctx.guild.id:
                 continue
 
             g = ctx.bot.get_guild(i)
@@ -69,8 +69,6 @@ class BudgetNitro(commands.Cog):
         e.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=e)
 
-        if isinstance(ctx.channel, discord.DMChannel) or isinstance(ctx.channel, discord.GroupChannel):
-            return
         try:
             await ctx.message.delete()
         except discord.errors.Forbidden:
@@ -131,7 +129,7 @@ async def convert_emojis(ctx, text):
             if m:
                 emoji_obj = discord.utils.get(ctx.bot.emojis, id=int(m.group(1)))
             else:
-                emoji_obj = discord.utils.get(ctx.guild.emojis, name=substr)
+                emoji_obj = ctx.guild and discord.utils.get(ctx.guild.emojis, name=substr)
                 if emoji_obj is None:
                     emoji_obj = discord.utils.get(ctx.bot.emojis, name=substr)
 

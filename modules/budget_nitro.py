@@ -5,6 +5,7 @@ from modules.long_list_printer import EmbedListPrinter
 
 import re
 import numpy as np
+import datetime
 
 
 class BudgetNitro(commands.Cog):
@@ -65,6 +66,7 @@ class BudgetNitro(commands.Cog):
         text = await convert_emojis(ctx, ' '.join(text))
         e = discord.Embed(description=text)
         e.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        e.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=e)
 
         if isinstance(ctx.channel, discord.DMChannel) or isinstance(ctx.channel, discord.GroupChannel):

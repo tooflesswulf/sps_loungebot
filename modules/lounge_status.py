@@ -79,10 +79,10 @@ class LoungeDoorStatus(commands.Cog):
 
             try:
                 sock.connect(self.server_address)
+                print('Opened socket')
             except (ConnectionRefusedError, socket.gaierror) as e:
                 print('Socket could not be opened. Trying again.')
                 continue
-            print('Opened socket')
 
             status = LazyStateChange()
             status.state = self.cur_status

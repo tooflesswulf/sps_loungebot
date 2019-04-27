@@ -64,7 +64,7 @@ class LoungeDoorStatus(commands.Cog):
                       brief='Stops sending you DM\'s',
                       description='Stops sending you DM\'s')
     async def unsubscribe_handler(self, ctx: commands.Context):
-        if ctx.message.author.id in self.notif_people:
+        if ctx.message.author.id not in self.notif_people:
             await ctx.author.send('You\'re not subscribed.')
             return
         self.notif_people.remove(ctx.author.id)

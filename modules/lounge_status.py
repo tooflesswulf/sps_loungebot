@@ -64,10 +64,11 @@ class LoungeDoorStatus(commands.Cog):
                       brief='Stops sending you DM\'s',
                       description='Stops sending you DM\'s')
     async def unsubscribe_handler(self, ctx: commands.Context):
-        if ctx.message.author.id not in self.notif_people:
+        try:
+            self.notif_people.remove(ctx.author.id)
+        except ValueError:
             await ctx.author.send('You\'re not subscribed.')
             return
-        self.notif_people.remove(ctx.author.id)
         with open(self.notif_file, 'wb') as f:
             pickle.dump(self.notif_people, f)
         await ctx.author.send('You\'re now unsubscribed.')

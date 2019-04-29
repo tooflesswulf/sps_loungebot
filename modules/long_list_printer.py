@@ -54,6 +54,8 @@ class EmbedListPrinter(commands.Cog):
             await self.msg.add_reaction('⬅')
             await self.msg.add_reaction('➡')
 
+            self.bot.add_listener(self.change_page_listener, name='on_reaction_add')
+
     async def change_page_listener(self, rxn, user):
         if len(self.pages) == 1 or user != self.author:
             return

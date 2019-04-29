@@ -44,7 +44,6 @@ class BudgetNitro(commands.Cog):
             e.add_field(name='Server ' + g.name, value=text, inline=False)
 
         await e.send(ctx)
-        ctx.bot.add_listener(e.change_page_listener, name='on_reaction_add')
 
     @commands.command(
         name='nitro',

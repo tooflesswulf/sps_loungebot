@@ -84,20 +84,22 @@ class EmbedListPrinter(commands.Cog):
     async def change_page_listener(self, rxn, user):
         if rxn.message.id != self.msg.id or len(self.pages) == 1 or user != self.author:
             return
-        if rxn.emoji == '⬅':
+        if rxn.emoji != '⬅' and rxn.emoji != '➡':
+            return
+
+        try:
             await rxn.remove(user)
+        except discord.errors.Forbidden:
+            pass
+
+        if rxn.emoji == '⬅':
             if self.page_no == 0:
                 return
-
             self.page_no -= 1
         elif rxn.emoji == '➡':
-            await rxn.remove(user)
             if self.page_no + 1 == len(self.pages):
                 return
-
             self.page_no += 1
-        else:
-            return
 
         e = self.gen_embed()
         await self.msg.edit(embed=e)

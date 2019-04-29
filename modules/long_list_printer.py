@@ -8,7 +8,7 @@ import asyncio
 class EmbedListPrinter(commands.Cog):
     list_timeout = 6000  # 10 min
 
-    def __init__(self, ctx, max_len=20):
+    def __init__(self, ctx, max_len=10):
         self.bot = ctx.bot
         self.author = ctx.author
         self.max_len = max_len

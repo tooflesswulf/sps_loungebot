@@ -28,7 +28,7 @@ class BudgetNitro(commands.Cog):
 
         if ctx.guild and ctx.guild.emojis:
             text = ''
-            for m in ctx.guild.emojis:
+            for m in sorted(ctx.guild.emojis, key=lambda em: em.name):
                 text += '{} `:{}:`\n'.format(str(m), m.name)
             e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
 
@@ -39,7 +39,7 @@ class BudgetNitro(commands.Cog):
             g = ctx.bot.get_guild(i)
 
             text = ''
-            for m in g.emojis:
+            for m in sorted(g.emojis, key=lambda em: em.name):
                 text += '{} `:{}:` | `:<{}>:`\n'.format(str(m), m.name, m.id)
             e.add_field(name='Server ' + g.name, value=text, inline=False)
 

@@ -31,6 +31,8 @@ class BudgetNitro(commands.Cog):
             for m in sorted(ctx.guild.emojis, key=lambda em: em.name):
                 text += '{} `:{}:`\n'.format(str(m), m.name)
             e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
+            e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
+            e.add_field(name='Server {}'.format(ctx.guild.name), value=text)
 
         for i in ids_order:
             if ctx.guild and i == ctx.guild.id:

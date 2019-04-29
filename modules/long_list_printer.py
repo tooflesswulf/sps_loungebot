@@ -57,7 +57,7 @@ class EmbedListPrinter(commands.Cog):
             self.bot.add_listener(self.change_page_listener, name='on_reaction_add')
 
     async def change_page_listener(self, rxn, user):
-        if len(self.pages) == 1 or user != self.author:
+        if rxn.message.id != self.msg.id or len(self.pages) == 1 or user != self.author:
             return
         if rxn.emoji == '⬅':
             await rxn.remove(user)

@@ -51,7 +51,9 @@ class BudgetNitro(commands.Cog):
         description='Prints your text back out at you. Emoji codes will be '
                     'converted to emojis, including animated ones and ones from '
                     'other servers (hence the nitro).\n'
-                    'Type nitro list to list all available emojis.'
+                    'Type nitro list to list all available emojis. '
+                    'The conversion codes for each emoji are listed after. '
+                    'Some have multiple (to resolve name degeneracies)'
     )
     async def emoji_converter(self, ctx, *text):
         if len(text) == 0:

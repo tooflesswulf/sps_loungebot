@@ -6,7 +6,7 @@ import asyncio
 
 
 class EmbedListPrinter(commands.Cog):
-    list_timeout = 6000  # 10 min
+    list_timeout = 600  # 10 min
 
     def __init__(self, ctx, max_len=10):
         self.bot = ctx.bot
@@ -35,10 +35,17 @@ class EmbedListPrinter(commands.Cog):
         stop_line = self.max_len - self.page_len - 1
         text = value.split('\n')
         self.fields.append((name, '\n'.join(text[:stop_line]), inline))
-
         self.pages.append(len(self.fields))
-        self.fields.append((name, '\n'.join(text[stop_line:]), inline))
-        self.page_len = v_len - stop_line
+        self.page_len = 0
+
+        self.add_field(name=name, value='\n'.join(text[stop_line:]), inline=inline)
+
+    def gen_embed(self):
+        e = discord.Embed(title=self.title)
+        for name, value, inline in self.fields[self.pages[self.page_no]]:
+            e.add_field(name=name, value=value, inline=inline)
+        e.set_footer(text='Page {}/{}'.format(1 + self.page_no, len(self.pages)))
+        return e
 
     async def send(self, ctx):
         if self.page_len != 0:
@@ -49,10 +56,7 @@ class EmbedListPrinter(commands.Cog):
             self.pages[i] = slice(start_tmp, end_num)
             start_tmp = end_num
 
-        e = discord.Embed(title=self.title)
-        for name, value, inline in self.fields[self.pages[self.page_no]]:
-            e.add_field(name=name, value=value, inline=inline)
-        e.set_footer(text='Page {}/{}'.format(1 + self.page_no, len(self.pages)))
+        e = self.gen_embed()
         self.msg = await ctx.send(embed=e)
         self.last_time = time.time()
 
@@ -72,7 +76,8 @@ class EmbedListPrinter(commands.Cog):
             await asyncio.sleep(self.list_timeout / 10)
 
         self.bot.remove_listener(self.change_page_listener, name='on_reaction_add')
-        e = discord.Embed(title=self.title, description='This list has timed out.')
+        self.title += ' (Expired)'
+        e = self.gen_embed()
         await self.msg.edit(embed=e)
         await self.msg.clear_reactions()
 
@@ -94,10 +99,7 @@ class EmbedListPrinter(commands.Cog):
         else:
             return
 
-        e = discord.Embed(title=self.title)
-        for name, value, inline in self.fields[self.pages[self.page_no]]:
-            e.add_field(name=name, value=value, inline=inline)
-        e.set_footer(text='Page {}/{}'.format(1 + self.page_no, len(self.pages)))
+        e = self.gen_embed()
         await self.msg.edit(embed=e)
 
         self.last_time = time.time()
